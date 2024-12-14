@@ -2,7 +2,38 @@
 
 Това приложение е клиент-сървър архитектура, която се занимава със сортиращите алгоритми Quick sort и Merge sort. При връзка между клиент и сървър, клиентът изпраща на сървъра списък с числа и получава от сървъра сортирания списък. Използва многонишков модел за обслужване на голяма бройка клиенти и се ползват паралелни модели на сортиранията.
 
-## Структура на проекта
+## Съдържание
+- [Изисквания](#изисквания)
+- [Структура на архитектурата](#структура-на-архитектурата)
+- [Сървър](#сървър)
+    - [main()](#main-function)
+    - [start_server()](#start_server)
+    - [get_number_of_elements()](#get_number_of_elementsclient_socket)
+    - [get_elements()](#get_elementsclient_socket-num_elements)
+    - [general_messages()](#general_messagesclient_socketi)
+    - [merge_sort()](#merge-sort)
+    - [parallel_merge_sort()](#parallel-merge-sort)
+    - [quick_sort()](#quick-sort)
+    - [parallel_quick_sort()](#parallel-quick-sort)
+    - [handle_client()](#handle_clientclient_socket-addr)
+- [Клиент](#клиент)
+    - [main()](#main-function-1)
+    - [clear_terminal()](#def-clear_terminal---изчистване-на-терминала)
+    - [client_handler()](#client_handler)
+- [Инсталация](#инсталация)
+- [Стартиране](#стартиране)
+- [Настройки за мрежата](#настройки-за-мрежата)
+- [Тестване](#тестване)
+
+## Изисквания
+- Python 3.7 или по-нова версия
+- Вградени библиотеки:
+  - `socket`
+  - `threading`
+  - `time`
+  - `os`
+
+## Структура на архитектурата
  - **server.py** - кодът на сървъра
  - **client.py** - кодът на клиента
  
@@ -401,9 +432,69 @@
         client_socket.close()
     ```
     Обработва грешки и гарантира, че сокетът е затворен. При грешка отпечатва съобщение за нея. Във `finally` сокетът се затваря, за да освободи ресурси.
+    
 
+## Инсталация
 
+1. **Инсталиране на Python**
+   - Уверете се, че Python е инсталиран:
+     ```bash
+     python --version
+     # Или
+     python3 --version
+     ```
+   - Ако не е, инсталирайте от [официалния сайт](https://www.python.org) или чрез пакетен мениджър (за Linux/MacOS).
 
+2. **Клониране на проекта**
+   - Клонирайте репозиторито или изтеглете файловете:
+     ```bash
+     git clone <URL_TO_YOUR_REPOSITORY>
+     cd <PROJECT_DIRECTORY>
+     ```
+
+3. **Създаване на виртуална среда**
+   - Създайте и активирайте виртуална среда:
+     ```bash
+     python -m venv venv
+     # Windows
+     venv\Scripts\activate
+     # Linux/MacOS
+     source venv/bin/activate
+     ```
+
+4. **Инсталиране на зависимости**
+   - Проектът няма външни зависимости. Уверете се, че виртуалната среда е активирана.
+## Стартиране
+
+### Стартиране на сървъра
+1. Отворете терминал.
+2. Стартирайте сървъра:
+   ```bash
+   python server.py
+   # Или
+   python3 server.py
+   ```
+
+### Стартиране на клиента
+1. Отворете втори терминал.
+2. Стартирайте клиента:
+
+   ```bash
+   python client.py
+   # Или
+   python3 client.py
+   ```
+## Настройки за мрежата
+Ако клиентът и сървърът са на различни машини:
+1. Променете IP адреса в `client.py` и `server.py`:
+
+   ```python
+   client_socket.connect(('SERVER_IP_ADDRESS', 8080))
+   ```
+   ```python
+   server.bind(('SERVER_IP_ADDRESS', 8080))
+    ```
+2. Уверете се, че портът `8080` е отворен и видим през мрежата.
 
 
 
