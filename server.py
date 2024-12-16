@@ -120,6 +120,31 @@ def general_messages(client_socket,i):
         time.sleep(0.01)
 
 
+def get_number_of_threads(client_socket):
+    while True:
+        client_socket.send("Enter the number of threads: \n".encode('utf-8'))
+        num_threads_message = client_socket.recv(1024).decode('utf-8')
+
+        if "exit" in num_threads_message.lower():
+            client_socket.send("disconnect\n".encode('utf-8'))
+            return None
+        
+        if "restart" in num_threads_message.lower():
+            client_socket.send("restart\n".encode('utf-8'))
+            return "restart"
+        
+        try:
+            num_threads = int(num_threads_message)
+            if num_threads > 0:
+                return num_threads
+            else:
+                client_socket.send("Please type a positive number for threads.\n".encode('utf-8'))
+                continue
+        except ValueError:
+            client_socket.send("Invalid number of threads. Please type correct number of threads.\n".encode('utf-8'))
+            continue
+
+
 def get_number_of_elements(client_socket):
     while True:
         client_socket.send("\nEnter the number of elements:  \n".encode('utf-8'))
@@ -137,7 +162,7 @@ def get_number_of_elements(client_socket):
             num_elements = int(num_elements_message)
             return num_elements
         except ValueError:
-            client_socket.send("Invalid number of elements. Please correct number of elements!\n".encode('utf-8'))
+            client_socket.send("Invalid number of elements. Please type correct number of elements!\n".encode('utf-8'))
             continue
 
 def get_elements(client_socket, num_elements):
@@ -190,6 +215,16 @@ def handle_client(client_socket, addr):
         if arr == "restart":
             general_messages_bool = True
             continue
+
+        num_threads = get_number_of_threads(client_socket)
+
+        if num_threads is None:
+            break
+        
+        if num_threads == "restart":
+            general_messages_bool = True
+            continue
+
         
         arr_original = arr.copy()
 
@@ -207,7 +242,7 @@ def handle_client(client_socket, addr):
         arr = arr_original
 
         start = time.perf_counter()
-        arr = parallel_merge_sort(arr)
+        arr = parallel_merge_sort(arr, num_threads)
         client_socket.send(f"\n---Multi-threaded merge sort: {arr}\n".encode('utf-8'))
         end = time.perf_counter()
         client_socket.send(f"The function took {(end-start):.15f} seconds.\n".encode('utf-8'))
@@ -227,7 +262,7 @@ def handle_client(client_socket, addr):
         arr = arr_original
         
         start = time.perf_counter()
-        arr = parallel_quick_sort(arr)
+        arr = parallel_quick_sort(arr, num_threads)
         client_socket.send(f"\n---Multi-threaded quick sort: {arr}\n".encode('utf-8'))
         end = time.perf_counter()
         client_socket.send(f"The function took {(end-start):.15f} seconds.\n".encode('utf-8'))
