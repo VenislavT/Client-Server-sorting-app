@@ -9,6 +9,7 @@
     - [main()](#main-function)
     - [start_server()](#start_server)
     - [get_number_of_elements()](#get_number_of_elementsclient_socket)
+    - [get_number_of_threads()](#get_number_of_threadsclient_socket)
     - [get_elements()](#get_elementsclient_socket-num_elements)
     - [general_messages()](#general_messagesclient_socketi)
     - [merge_sort()](#merge-sort)
@@ -132,6 +133,17 @@
     continue
     ```
     Ако възникне грешка (невалиден вход), изпраща съобщение за грешка до клиента и клиентът може да опита отново да въведе брой числа.
+
+- ## get_number_of_threads(client_socket):
+    Функцията е като `get_number_of_elements(client_socket)`, но с една допълнителна проверка:
+    ```python
+    if num_threads > 0:
+        return num_threads
+    else:
+        client_socket.send("Please type a positive number for threads.\n".encode('utf-8'))
+        continue
+    ```
+    Преди грешката за невалиден вход, има проверка дали числото е отрицателно, за да се даде по-конкретно съобщение.
 
 - ## get_elements(client_socket, num_elements):
     Изпращането на съобщения, получаването на входни данни от клиента и проверките за команди са като при `get_number_of_elements(client_socket)`. Единствената разлика е съобщението `client_socket.send(f"Enter {num_elements} elements separated by spaces: \n".encode('utf-8'))` и това че се чакат множество елементи.
