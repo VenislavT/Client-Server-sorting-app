@@ -460,7 +460,7 @@
 2. **Клониране на проекта**
    - Клонирайте репозиторито или изтеглете файловете:
      ```bash
-     git clone <URL_TO_YOUR_REPOSITORY>
+     git clone https://github.com/VenislavT/Client-Server-sorting-app.git
      cd <PROJECT_DIRECTORY>
      ```
 
