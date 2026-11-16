@@ -120,16 +120,19 @@ def general_messages(client_socket,i):
         time.sleep(0.01)
 
 
-def get_number_of_threads(client_socket):
+def get_number_of_threads(client_socket, reader):
     while True:
         client_socket.send("Enter the number of threads: \n".encode('utf-8'))
-        num_threads_message = client_socket.recv(1024).decode('utf-8')
+        num_threads_message = reader.readline()
 
-        if "exit" in num_threads_message.lower():
+        if num_threads_message == "":
+            return None
+
+        if num_threads_message.strip().lower() == "exit":
             client_socket.send("disconnect\n".encode('utf-8'))
             return None
         
-        if "restart" in num_threads_message.lower():
+        if num_threads_message.strip().lower() == "restart":
             client_socket.send("restart\n".encode('utf-8'))
             return "restart"
         
@@ -145,37 +148,47 @@ def get_number_of_threads(client_socket):
             continue
 
 
-def get_number_of_elements(client_socket):
+def get_number_of_elements(client_socket, reader):
     while True:
         client_socket.send("\nEnter the number of elements:  \n".encode('utf-8'))
-        num_elements_message = client_socket.recv(1024).decode('utf-8')
+        num_elements_message = reader.readline()
 
-        if "exit" in num_elements_message.lower():
+        if num_elements_message == "":
+            return None
+
+        if num_elements_message.strip().lower() == "exit":
             client_socket.send("disconnect\n".encode('utf-8'))
             return None 
         
-        if "restart" in num_elements_message.lower():
+        if num_elements_message.strip().lower() == "restart":
             client_socket.send("restart\n".encode('utf-8'))
             return "restart"
 
         try:
             num_elements = int(num_elements_message)
-            return num_elements
+            if num_elements > 0:
+                return num_elements
+            else:
+                client_socket.send("Please type a positive number of elements.\n".encode('utf-8'))
+                continue
         except ValueError:
             client_socket.send("Invalid number of elements. Please type correct number of elements!\n".encode('utf-8'))
             continue
 
-def get_elements(client_socket, num_elements):
+def get_elements(client_socket, reader, num_elements):
     while True:
         try:
             client_socket.send(f"Enter {num_elements} elements separated by spaces: \n".encode('utf-8'))
-            data = client_socket.recv(1024).decode('utf-8')
+            data = reader.readline()
 
-            if "restart" in data.lower():
+            if data == "":
+                return None
+
+            if data.strip().lower() == "restart":
                 client_socket.send("restart\n".encode('utf-8'))
                 return "restart"
             
-            if "exit" in data.lower():
+            if data.strip().lower() == "exit":
                 client_socket.send("disconnect\n".encode('utf-8'))
                 return None 
             
@@ -192,13 +205,22 @@ def get_elements(client_socket, num_elements):
             continue
 
 def handle_client(client_socket, addr):
+    try:
+        serve_client(client_socket, addr)
+    except (ConnectionResetError, BrokenPipeError):
+        pass
+    print(f"Client {addr[0]}:{addr[1]} disconnected.")
+    client_socket.close()
+
+def serve_client(client_socket, addr):
+    reader = client_socket.makefile('r', encoding='utf-8')
     general_messages_bool = True
 
     while True:
         general_messages(client_socket, general_messages_bool)
         general_messages_bool = False
 
-        num_elements = get_number_of_elements(client_socket)
+        num_elements = get_number_of_elements(client_socket, reader)
 
         if num_elements is None: 
             break
@@ -207,7 +229,7 @@ def handle_client(client_socket, addr):
             general_messages_bool = True
             continue
 
-        arr = get_elements(client_socket, num_elements)
+        arr = get_elements(client_socket, reader, num_elements)
         
         if arr is None:
             break
@@ -216,7 +238,7 @@ def handle_client(client_socket, addr):
             general_messages_bool = True
             continue
 
-        num_threads = get_number_of_threads(client_socket)
+        num_threads = get_number_of_threads(client_socket, reader)
 
         if num_threads is None:
             break
@@ -233,8 +255,8 @@ def handle_client(client_socket, addr):
         #Merge sort: single-thread
         start = time.perf_counter()
         arr = merge_sort(arr)
-        client_socket.send(f"\n---Single-thread merge sort: {arr}\n".encode('utf-8'))
         end = time.perf_counter()
+        client_socket.send(f"\n---Single-threaded merge sort: {arr}\n".encode('utf-8'))
         client_socket.send(f"The function took {(end-start):.15f} seconds.\n".encode('utf-8'))
         time.sleep(0.01)
 
@@ -243,8 +265,8 @@ def handle_client(client_socket, addr):
 
         start = time.perf_counter()
         arr = parallel_merge_sort(arr, num_threads)
-        client_socket.send(f"\n---Multi-threaded merge sort: {arr}\n".encode('utf-8'))
         end = time.perf_counter()
+        client_socket.send(f"\n---Multi-threaded merge sort: {arr}\n".encode('utf-8'))
         client_socket.send(f"The function took {(end-start):.15f} seconds.\n".encode('utf-8'))
         time.sleep(0.01)
 
@@ -253,8 +275,8 @@ def handle_client(client_socket, addr):
         
         start = time.perf_counter()
         arr = quick_sort(arr)
-        client_socket.send(f"\n---Single-threaded quick sort: {arr}\n".encode('utf-8'))
         end = time.perf_counter()
+        client_socket.send(f"\n---Single-threaded quick sort: {arr}\n".encode('utf-8'))
         client_socket.send(f"The function took {(end-start):.15f} seconds.\n".encode('utf-8'))
         time.sleep(0.01)
 
@@ -263,13 +285,10 @@ def handle_client(client_socket, addr):
         
         start = time.perf_counter()
         arr = parallel_quick_sort(arr, num_threads)
-        client_socket.send(f"\n---Multi-threaded quick sort: {arr}\n".encode('utf-8'))
         end = time.perf_counter()
+        client_socket.send(f"\n---Multi-threaded quick sort: {arr}\n".encode('utf-8'))
         client_socket.send(f"The function took {(end-start):.15f} seconds.\n".encode('utf-8'))
         time.sleep(0.01)
-
-    print(f"Client {addr[0]}:{addr[1]} disconnected.")
-    client_socket.close()
 
 def start_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

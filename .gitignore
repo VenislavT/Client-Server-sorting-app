@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+tets/
+*.zip
+*.pdf
+GitHub project link.txt
+docs/documentation_bg.md

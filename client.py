@@ -10,13 +10,20 @@ def clear_terminal():
 
 def client_handler():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(('127.0.0.1', 8080))
+    try:
+        client_socket.connect(('127.0.0.1', 8080))
+    except ConnectionRefusedError:
+        print("Server is not running. Start server.py first.")
+        return
     buffer = ""
 
     try:
         while True:
             data = client_socket.recv(1024).decode('utf-8')
-            buffer += data 
+            if data == "":
+                print("The server closed the connection.")
+                return
+            buffer += data
 
 
             while "\n" in buffer:
@@ -36,8 +43,10 @@ def client_handler():
            
                 if "Enter" in server_message:
                     print(server_message, end=" ")
-                    client_input = input() 
-                    client_socket.send(client_input.encode('utf-8'))
+                    client_input = input().strip()
+                    while client_input == "":
+                        client_input = input("Please type something: ").strip()
+                    client_socket.send((client_input + "\n").encode('utf-8'))
                     continue
                 else:
                     print(server_message)
